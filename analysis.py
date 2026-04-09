@@ -97,7 +97,7 @@ for i, var in enumerate(VARIABLES):
 plt.tight_layout()
 plt.savefig('histogram.png', dpi=150, bbox_inches='tight')
 print("\nSparad: histogram.png")
-plt.show()
+plt.close()
 
 # --- Bild 2: Boxplot per genre ---
 fig, axes = plt.subplots(1, 3, figsize=(18, 6))
@@ -112,23 +112,33 @@ for i, var in enumerate(VARIABLES):
 plt.tight_layout()
 plt.savefig('boxplot_genres.png', dpi=150, bbox_inches='tight')
 print("Sparad: boxplot_genres.png")
-plt.show()
+plt.close()
 
-# --- Bild 3: Scatter — danceability vs popularity ---
-fig, ax = plt.subplots(figsize=(10, 6))
-sns.scatterplot(
-    x='danceability', y='popularity',
-    hue='track_genre', data=df_genres,
-    alpha=0.4, ax=ax
-)
-ax.set_title("Popularitet vs Dansbarhet per genre", fontsize=13)
-ax.set_xlabel("Danceability")
-ax.set_ylabel("Popularity")
+# --- Bild 3: Densitetsplot — danceability vs popularity per genre ---
+colors = {'pop': '#4c72b0', 'rock': '#dd8452', 'hip-hop': '#55a868', 'classical': '#c44e52'}
+fig, axes = plt.subplots(2, 2, figsize=(12, 9))
+fig.suptitle("Popularitet vs Dansbarhet per genre (densitet)", fontsize=14, fontweight='bold')
+
+for ax, genre in zip(axes.flat, GENRES):
+    subset = df_genres[df_genres['track_genre'] == genre]
+    sns.kdeplot(
+        x=subset['danceability'], y=subset['popularity'],
+        fill=True, cmap='Blues' if genre == 'pop' else
+                       'Oranges' if genre == 'rock' else
+                       'Greens' if genre == 'hip-hop' else 'Reds',
+        thresh=0.05, levels=10, ax=ax
+    )
+    ax.set_title(genre.capitalize(), fontsize=12, fontweight='bold', color=colors[genre])
+    ax.set_xlabel("Danceability")
+    ax.set_ylabel("Popularity")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 100)
+    ax.grid(True, linestyle='--', alpha=0.4)
 
 plt.tight_layout()
 plt.savefig('scatter_dance_pop.png', dpi=150, bbox_inches='tight')
-print("Sparad: scatter_dance_pop.png")
-plt.show()
+print("Sparad: scatter_dance_pop.png (densitetsplot)")
+plt.close()
 
 # --- Bild 4: Medelvärden per genre (stapeldiagram) ---
 means = df_genres.groupby('track_genre')[VARIABLES].mean().reset_index()
@@ -144,6 +154,6 @@ for i, var in enumerate(VARIABLES):
 plt.tight_layout()
 plt.savefig('medelvarden_genre.png', dpi=150, bbox_inches='tight')
 print("Sparad: medelvarden_genre.png")
-plt.show()
+plt.close()
 
 print("\nKlart! Alla grafer sparade.")
